@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ project_name.lower() }}-graphite-service
+spec:
+  selector:
+    app: {{ project_name.lower() }}
+    type: graphite
+  ports:
+    - name: nginx
+      protocol: TCP
+      targetPort: 80
+      port: 8888
+    - name: carbon-receiver-plaintext
+      protocol: TCP
+      targetPort: 2003
+      port: 2003
+    - name: carbon-receiver-pickle
+      protocol: TCP
+      targetPort: 2004
+      port: 2004
+    - name: carbon-aggregator-plaintext
+      protocol: TCP
+      targetPort: 2023
+      port: 2023
+    - name: carbon-aggregator-pickle
+      protocol: TCP
+      targetPort: 2024
+      port: 2024
+    - name: statsd
+      protocol: UDP
+      targetPort: 8125
+      port: 8125
+    - name: statsd-admin
+      protocol: TCP
+      targetPort: 8126
+      port: 8126

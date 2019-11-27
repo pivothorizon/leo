@@ -1,0 +1,48 @@
+from threading import Lock
+from .model import {{ project_name }}Model
+from .config import model_repo_path
+import os
+import pickle
+
+
+class ModelRepo:
+
+    def __init__(self):
+        self._lock = Lock()
+
+    def load_model(self) -> {{ project_name }}Model:
+        """
+        Initializes the model from a models directory defined in config.py file.
+        :exception ModelException: If the model cannot be loaded. In the default implementation, either if the
+                                   file is not found, or if a PicklingError is raised when loading the file.
+
+        """
+        with self._lock:
+            if os.access(model_repo_path, os.O_RDONLY):
+                with open(model_repo_path, 'rb') as f:
+                    try:
+                        binary = f.read()
+                        return {{ project_name }}Model(pickle.loads(binary))
+                    except pickle.PicklingError as ex:
+                        raise ModelException('The model could not be unpickled.', 400, {'original_error': ex})
+            else:
+                raise ModelException(f'Could not find file model in  {model_repo_path}.', 404)
+
+    def save_model(self, {{ module_name }}_model: {{ project_name }}Model) -> None:
+        """
+        Serialize trained model.
+        The default implementation will attempt to pickle the trained model. If the trained model does not support pickling,
+        an exception will be raised.
+
+        :param {{ module_name }}_model: {{ project_name }}Model to be saved
+        :exception ModelException: If the default implementation of this method is used,
+                                   but the model does not support pickling.
+        """
+        with self._lock:
+            try:
+                binary = pickle.dumps({{ module_name }}_model.get_model())
+                with open(model_repo_path, 'wb') as f:
+                    f.write(binary)
+            except pickle.PicklingError:
+                raise ModelException('This model cannot be saved by the default method (pickling) - please provide a'
+                                     ' custom implementation of the save_model method.')

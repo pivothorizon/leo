@@ -1,0 +1,53 @@
+FROM python:3.7.4
+
+ENV APP_DIR /app
+ENV PACKAGE_NAME {{ module_name }}
+
+WORKDIR ${APP_DIR}
+
+{% if use_prometheus %}
+# prometheus multiprocess config
+RUN mkdir -p ${APP_DIR}/prometheus
+ENV prometheus_multiproc_dir ${APP_DIR}/prometheus
+{% endif %}
+
+# Install python requirements from PyPi
+COPY requirements.txt ${APP_DIR}/
+RUN pip3 install -r requirements.txt
+
+COPY config.py ${APP_DIR}/
+COPY models ${APP_DIR}/models
+ADD ${PACKAGE_NAME} ${APP_DIR}/${PACKAGE_NAME}
+
+{% if use_prometheus %}
+RUN mkdir grafana_db
+RUN chmod 777 grafana_db
+{% endif %}
+
+EXPOSE 5000
+{% if use_gunicorn %}
+# Use Gunicorn as a standalone wsgi container in production mode.
+# Add "--workers" or "-w" for spinning up number of workers you would like. Recommended formula for calculating number of workers: 2 * cpu + 1.
+# Example for 4 cpu machine: 2 * 4 + 1 = 9. You can set it by adding options before the last argument of the ENTRYPOINT.
+
+# Gunicorn is based on the pre-fork worker model. Default worker class is "sync" which handles requests synchronously.
+# You can change default worker class by setting "-k" option
+# Example: Using eventlet for async request handling. "-k", "eventlet"
+
+# There are a lot more configuration parameters which you can modify.
+# For more details on how to configure Gunicorn please refer to official documenttion here: http://docs.gunicorn.org/en/stable/settings.html
+ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:5000", "-c" , "{{ module_name }}/config.py", "{{ module_name }}:{{ app_object_name }}"]
+{% elif use_uWSGI %}
+# Use uWSGI as standalone WSGI container in production mode.
+# uWSGI will started a single process to handle incoming requests. This is not very handy for production deployments. You can set # of processes by adding option "-p" as the
+# Example: ENTRYPOINT ["uwsgi", "--http", "0.0.0.0:5000", "-p", "9", "--module", "{{ module_name }}:{{ app_object_name }}"]
+
+# For more details about how to set up uWSGI please refer to https://flask.palletsprojects.com/en/1.0.x/deploying/uwsgi/ and https://uwsgi-docs.readthedocs.io/en/latest/
+ENTRYPOINT ["uwsgi", "--http", "0.0.0.0:5000", "--module", "{{ module_name }}:{{ app_object_name }}"]
+{% else %}
+# Run flask app directly. Note that this should not be used in production. You should use a wsgi server such as gunicorn, uWSGI, etc... instead
+# Let Flask know where to find the api
+ENV FLASK_APP ${APP_DIR}/${PACKAGE_NAME}
+
+ENTRYPOINT ["python3", "-m", "flask", "run", "--host", "0.0.0.0", "--port", "5000"]
+{% endif %}

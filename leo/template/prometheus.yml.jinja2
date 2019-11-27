@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 10s
+  scrape_timeout: 5s
+  evaluation_interval: 10s
+  external_labels:
+    monitor: '{{ module_name }}-monitor'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+      scheme: http
+      timeout: 10s
+
+scrape_configs:
+  - job_name: prometheus
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - 0.0.0.0:9090
+  - job_name: {{ module_name }}
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          - {{ module_name }}-main-service:5000

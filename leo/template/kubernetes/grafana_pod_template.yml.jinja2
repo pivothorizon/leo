@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ project_name.lower() }}-grafana-pod
+  labels:
+    app: {{ project_name.lower() }}
+    type: grafana
+spec:
+  containers:
+    - name: grafana
+      image: grafana/grafana:3.0.0-beta7
+      ports:
+        - containerPort: 3000
+          hostPort: 3000
+      volumeMounts:
+        - name: grafana-dir
+          mountPath: /var/lib/grafana
+      env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: pass
+  volumes:
+    - name: grafana-dir
+      hostPath:
+        path:  {{ cwd }}/grafana_db

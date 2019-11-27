@@ -1,0 +1,23 @@
+import graphyte
+import time
+
+
+def log_request_metrics(metric: str):
+    """
+    Decorator which records and sends Graphite metrics for the wrapped function.
+    """
+    def decorator(fn):
+        def wrapper(*args, **kwargs):
+            graphyte.send(f'{metric}.calls', 1)
+            try:
+                start_time = time.time()
+                result = fn(*args, **kwargs)
+                end_time = time.time()
+            except:
+                graphyte.send(f'{metric}.errors', 1)
+                raise
+            else:
+                graphyte.send(f'{metric}.response_time', end_time - start_time)
+                return result
+        return wrapper
+    return decorator
