@@ -55,7 +55,7 @@ everyone is a beginner at first :smile_cat:
 
 ### Get the style right
 
-we try to enforce a more consistent style and
+We try to enforce a more consistent style and
     follow the Python community guidelines. We currently enforce most of
     [PEP8]
 
