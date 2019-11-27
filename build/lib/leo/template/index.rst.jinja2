@@ -1,0 +1,54 @@
+Welcome to {{ project_name }}'s documentation!
+===============================
+
+.. autosummary::
+   :toctree: stubs
+
+   {{ project_name.lower() }}.basemodel.BaseModel
+   {{ project_name.lower() }}.model.{{ project_name }}
+   {{ project_name.lower() }}.api.{{ project_name }}App
+
+{{ project_name }} Model
+---
+
+.. automodule:: {{ project_name.lower() }}.model
+   :members:
+
+API
+---
+.. automodule:: {{ project_name.lower() }}.api
+   :members:
+
+Base Model
+---
+.. automodule:: {{ project_name.lower() }}.basemodel
+   :members:
+
+Metrics
+---
+.. automodule:: {{ project_name.lower() }}.metrics
+   :members:
+
+Schemas
+---
+.. automodule:: {{ project_name.lower() }}.schema
+   :members:
+
+{% if use_spark %}
+Spark Support
+---
+.. automodule:: {{ project_name.lower() }}.sparkmodel
+   :members:
+{% if use_mleap %}
+.. automodule:: {{ project_name.lower() }}.mleapsparkmodel
+   :members:
+{% endif %}
+{% endif %}
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

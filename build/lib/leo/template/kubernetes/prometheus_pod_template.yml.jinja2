@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ project_name.lower() }}-prometheus-pod
+  labels:
+    app: {{ project_name.lower() }}
+    type: prometheus
+spec:
+  containers:
+    - name: prometheus
+      image: prom/prometheus:v2.2.1
+      ports:
+        - containerPort: 9090
+          hostPort: 9090
+      volumeMounts:
+        - name: prometheus-dir
+          mountPath: /etc/prometheus/
+        - name: prometheus-db
+          mountPath: /var/lib/prometheus
+      args:
+        - --config.file=/etc/prometheus/prometheus.yml
+        - --web.console.libraries=/usr/share/prometheus/console_libraries
+        - --web.console.templates=/usr/share/prometheus/consoles
+  volumes:
+    - name: prometheus-dir
+      hostPath:
+        path:  {{ cwd }}/prometheus
+    - name: prometheus-db
+      hostPath:
+        path:  {{ cwd }}/prometheus_db

@@ -1,0 +1,8 @@
+apiVersion: 1
+datasources:
+  - name: {{ module_name }}-prometheus
+    type: prometheus
+    access: proxy
+    url: http://{{ module_name }}-prometheus-service:9090/
+    isDefault: true
+    editable: true

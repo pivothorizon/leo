@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+sleep 3
+
+curl -i -X POST \
+  --url http://{{ module_name }}-kong-service:8001/services/ \
+  --data 'name={{ module_name }}-main-service' \
+  --data 'url=http://{{ module_name }}-main-service:5000'
+
+curl -i -X POST \
+  --url http://{{ module_name }}-kong-service:8001/services/{{ module_name }}-main-service/routes \
+  --data 'paths[]=/app'

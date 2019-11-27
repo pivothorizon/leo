@@ -1,0 +1,38 @@
+{% if use_pyspark %}
+from pyspark.ml import Pipeline
+{% endif %}
+from .model import {{ project_name }}Model
+from .data import training_data
+
+
+{% if use_pyspark %}
+def build_pipeline() -> Pipeline:
+    """
+    Generates a pyspark.ml.Pipeline, which fill be used for training the model.
+    The pipeline built in this function should accept data in the same format produced by the training_data function
+    in data.py.
+    :return: The pipeline which can be used to train a {{ project_name }}Model.
+    """
+    # TODO implement pyspark.ml.Pipeline here
+    raise NotImplementedError('build_pipeline has not been implemented yet!')
+
+
+def train_model() -> {{ project_name }}Model:
+    """
+    Trains an instance of {{ project_name }}Model.
+    {{ project_name }}Model should have a constructor which accepts the output of the pipeline
+    created by build_pipeline().
+    :return: The trained model instance.
+    """
+    training_df = training_data()
+    return {{ project_name }}Model(build_pipeline().fit(training_df))
+{% else %}
+
+def train_model() -> {{ project_name }}Model:
+    """
+    Trains a model based on the training data provided by the training_data() function in data.py
+    :return: A trained instance of {{ project_name }}Model.
+    """
+    training_data_set = training_data()
+    raise NotImplementedError('Please implement model training logic here')
+{% endif %}

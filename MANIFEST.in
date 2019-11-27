@@ -1,0 +1,2 @@
+recursive-include leo/package_files *
+recursive-include leo/template *

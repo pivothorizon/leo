@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ project_name.lower() }}-main-pod
+  labels:
+    app: {{ project_name.lower() }}
+    type: main
+spec:
+  initContainers:
+    - name: kong-setup-service
+      image: appropriate/curl:latest
+      command:
+        - sh
+        - /setup-service.sh
+      volumeMounts:
+        - name: kong-service-script
+          mountPath: /setup-service.sh
+          readOnly: true
+  containers:
+    - name: app
+      image: {{ project_name.lower() }}-app:{{ version }}
+      imagePullPolicy: Never
+      ports:
+        - containerPort: 5000
+          hostPort: 5000
+  volumes:
+    - name: kong-service-script
+      hostPath:
+        path:  {{ cwd }}/kong/setup-service-kube.sh
