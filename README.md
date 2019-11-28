@@ -13,6 +13,9 @@ necessary components for industrialization of ML models
 
 ## Workflow
 
+Leo can be installed by installing the python package from PyPI:
+`pip install leo-python`
+
 A new Leo project may be generated using the `leo create` command.
 This will start an interactive process in which you can choose to
 enable components of various types, which are listed below. Except for a
