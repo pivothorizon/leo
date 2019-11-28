@@ -1,0 +1,15 @@
+# JetBrains
+.idea
+
+# Python
+venv
+*.pyc
+*.egg-info
+**/__pycache__
+
+# Visual Studio Code
+.vscode
+
+docs/_build
+build
+dist
