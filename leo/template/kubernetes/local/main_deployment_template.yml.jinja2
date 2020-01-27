@@ -1,0 +1,47 @@
+kind: Deployment
+apiVersion: apps/v1beta2
+metadata:
+  name: {{ project_name.lower() }}-main-deployment
+  labels:
+    app: {{ project_name.lower() }}
+    type: main
+spec:
+  selector:
+    matchLabels:
+      app: {{ project_name.lower() }}
+      type: main
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: {{ project_name.lower() }}
+        type: main
+        version: {{ version }}
+{% if use_kong %}
+  initContainers:
+    - name: kong-setup-service
+      image: appropriate/curl:latest
+      command:
+        - sh
+        - /setup-service.sh
+      volumeMounts:
+        - name: kong-service-script
+          mountPath: /setup-service.sh
+          readOnly: true
+{% endif %}
+  containers:
+    - name: app
+      image: {{ project_name.lower() }}-app:{{ version }}
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 5000
+          hostPort: 5000
+  volumes:
+    - name: kong-service-script
+      hostPath:
+        path:  {{ cwd }}/kong/setup-service-kube.sh

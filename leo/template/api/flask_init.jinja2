@@ -5,11 +5,11 @@ from .config import version
 application = flask.Flask('{{ project_name }}')
 application.config['API_VERSION'] = version
 application.config['OPENAPI_VERSION'] = '3.0.2'
-application.config['OPENAPI_URL_PREFIX'] = 'api-docs'
+application.config['OPENAPI_URL_PREFIX'] = 'api'
 application.config['OPENAPI_JSON_PATH'] = 'openapi.json'
-application.config['OPENAPI_SWAGGER_UI_PATH'] = '/api'
+application.config['OPENAPI_SWAGGER_UI_PATH'] = '/docs'
 application.config['OPENAPI_SWAGGER_UI_VERSION'] = '3.23.5'
-application.config['applicationLICATION_ROOT'] = '/{% if use_kong %}application{% endif %}'
+application.config['APPLICATION_ROOT'] = '/{% if use_kong %}application{% endif %}'
 
 _api = rest.Api(application)
 

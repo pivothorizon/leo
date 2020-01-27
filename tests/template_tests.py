@@ -90,14 +90,14 @@ class TempModule:
 class SchemaTemplateTests(TemplateTestCase):
 
     def test_basic_template(self):
-        from leo.helper import _schema_template
-        rendered = _schema_template('TestModel', 'Init', None)
+        from leo.helper import make_schema_template
+        rendered = make_schema_template('TestModel', 'Init', None)
         with TempModule(self, 'testmodel.schema', rendered, 'import marshmallow as ma\n\n', False) as module:
             self.assertTrue(hasattr(module, 'TestModelInitSchema'), 'Schema not found in imported module.')
 
     def test_template_with_reference(self):
-        from leo.helper import _schema_template
-        rendered = _schema_template('TestModel', 'Init', 'tests.template_tests._TestSchema')
+        from leo.helper import make_schema_template
+        rendered = make_schema_template('TestModel', 'Init', 'tests.template_tests._TestSchema')
         with TempModule(self, 'testmodel.schema', rendered,
                         'import marshmallow as ma\n\nimport tests.template_tests\n\n', False) as module:
             self.assertTrue(hasattr(module, 'TestModelInitSchema'), 'Schema not found in imported module.')

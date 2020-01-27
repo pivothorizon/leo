@@ -3,11 +3,9 @@ from .config import version
 from .data import test_data
 
 {% if use_pyspark %}
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import SparkSession
 import pandas
 {% endif %}
-
-from .schema import {{ project_name }}RequestSchema
 
 
 class BaseModel(metaclass=ABCMeta):
@@ -67,6 +65,7 @@ class BaseModel(metaclass=ABCMeta):
 
         :exception ModelNotTrainedException: Raised if underlying model is not trained yet.
         """
+
 
 {% if use_pyspark %}
 class SparkModel(BaseModel):

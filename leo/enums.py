@@ -2,39 +2,39 @@ from enum import Enum
 
 
 class MonitoringOptions(Enum):
-	PROMETHEUS = 'prometheus'
-	GRAPHITE = 'graphite'
+    PROMETHEUS = 'prometheus'
+    GRAPHITE = 'graphite'
 
 
 class LoggingOptions(Enum):
-	ELK = 'elk'
+    ELK = 'elk'
 
 
 class GatewayOptions(Enum):
-	KONG = 'kong'
+    KONG = 'kong'
 
 
 class WSGIOptions(Enum):
-	GUNICORN = 'gunicorn'
-	uWSGI = 'uwsgi'
+    GUNICORN = 'gunicorn'
+    uWSGI = 'uwsgi'
 
 
 class WebFrameworkOptions(Enum):
-	FLASK = 'flask'
-	FALCON = 'falcon'
+    FLASK = 'flask'
+    FALCON = 'falcon'
 
 
 class EnvironmentOptions(Enum):
-	VIRTUALENV = 'virtualenv'
-	CONDA = 'conda'
+    VIRTUALENV = 'virtualenv'
+    CONDA = 'conda'
 
 
 class OSType(Enum):
-	POSIX = 'posix'
-	WINDOWS = 'windows'
-	UNKNOWN = 'unknown'
+    POSIX = 'posix'
+    WINDOWS = 'windows'
+    UNKNOWN = 'unknown'
 
 
 class LibrarySupport(Enum):
-	PYSPARK = 'pyspark'
-	MLEAP = 'mleap'
+    PYSPARK = 'pyspark'
+    MLEAP = 'mleap'

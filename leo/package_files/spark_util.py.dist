@@ -11,11 +11,6 @@ class SparkUtil:
         self._lock = Lock()
 
     def get_spark_session(self):
-        """
-        Get the Spark Session object. If the session has not yet been initialized, this method will attempt
-        to initialize it using the parameters from the config.py file.
-        :return: The (initialized) Spark Session
-        """
         if self._spark is None:
             with self._lock:
                 _spark_conf = SparkConf(loadDefaults=spark_config_include_defaults)

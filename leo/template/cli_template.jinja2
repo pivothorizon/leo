@@ -138,14 +138,24 @@ class {{ project_name }}Cli(object):
             with open(path, 'r') as f:
                 return yaml.safe_load(f)
 
+        def _start_service(name: str):
+            print(f'Starting {name} Service')
+            kubernetes_api.create_namespaced_service(namespace='default', body=_load_yaml(f'kubernetes/local/{name}_service.yml'))
+
         def _start_component(name: str):
             print(f'Starting {name} Pod')
-            response = kubernetes_api.create_namespaced_pod(namespace='default', body=_load_yaml(f'kubernetes/{name}_pod_template.yml'))
+            response = kubernetes_api.create_namespaced_pod(namespace='default', body=_load_yaml(f'kubernetes/local/{name}_pod_template.yml'))
             while response.status.phase == 'Pending':
                 response = kubernetes_api.read_namespaced_pod(namespace='default', name=f'{{ project_name.lower() }}-{name}-pod')
+            _start_service(name)
 
-            print(f'Starting {name} Service')
-            kubernetes_api.create_namespaced_service(namespace='default', body=_load_yaml(f'kubernetes/{name}_service.yml'))
+        def _start_deployment(name: str):
+            print(f'Starting {name} Deployment')
+            response = kubernetes_api.create_namespaced_deployment(namespace='default', body=_load_yaml(f'kubernetes/local/{name}_deployment.yaml'))
+            while response.status.phase == 'Pending':
+                response = kubernetes_api.read_namespaced_deployment(namespace='default', name=f'{{ project_name.lower() }}-{name}-deployment')
+            _start_service(name)
+
 
         if self._build_docker() and self._test_kubernetes_setup():
             print('Image built, starting Pods and Services')
@@ -164,7 +174,7 @@ class {{ project_name }}Cli(object):
 {% elif use_graphite %}
             _start_component('graphite')
 {% endif %}
-            _start_component('main')
+            _start_deployment('main')
         else:
             print('Image failed to build.')
 
@@ -172,6 +182,13 @@ class {{ project_name }}Cli(object):
         subprocess.run(['docker-compose', '-f', os.path.join(os.getcwd(), 'docker-compose.yml'), 'down', '-v'], capture_output=True)
 
     def undeploy_kubernetes(self):
+        print('Stopping main deployment')
+        try:
+            kubernetes_api.delete_namespaced_deployment(namespace='default', body={}, name=f'{{ project_name.lower() }}-main-deployment')
+        except ApiException as e:
+                if e.status != 404:
+                    raise e
+
         def _stop_component(name: str):
             print(f'Stopping {name} Service')
             try:
@@ -202,7 +219,6 @@ class {{ project_name }}Cli(object):
 {% elif use_graphite %}
         _stop_component('graphite')
 {% endif %}
-        _stop_component('main')
 
     def _build_docker(self):
         if not self._test_docker_setup():
