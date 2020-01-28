@@ -268,20 +268,6 @@ def make_requirements_template(context: CliContext, target: Optional[TextIO] = N
     return _make_template('requirements.txt.jinja2', context, target)
 
 
-def make_kubernetes_kong_template(context: CliContext, target: Optional[TextIO] = None) -> Optional[str]:
-    """
-    Generate a script to initialize Kong for the new project.
-    This version of the script can be used by Kubernetes.
-
-    :param context: Cli context which captures command line arguments and provides utility methods
-    :param target: A stream to write the file to. If None, the file will be returned as a string.
-
-    :return: The script contents, except if the target parameter is given.
-
-    """
-    return _make_template('kong_setup_service.sh.jinja2', context, target)
-
-
 def make_kubernetes_templates(context: CliContext, target_directory: str) -> None:
     """
     Generate Kubernetes Pod templates and Services for the new project.

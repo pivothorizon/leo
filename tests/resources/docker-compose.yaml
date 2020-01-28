@@ -1,0 +1,164 @@
+version: '3'
+services:
+  testleo-main-service:
+    build: ""
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    networks:
+      - kong-net
+    depends_on:
+      - testleo-kong-setup-service
+
+  testleo-elastic-service:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    networks:
+      - kong-net
+      - external
+
+  testleo-kibana-service:
+    image: docker.elastic.co/kibana/kibana:7.3.0
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    networks:
+      - kong-net
+      - external
+
+  testleo-logstash-service:
+    image: docker.elastic.co/logstash/logstash:7.3.0
+    ports:
+      - "5959:5959"
+    volumes:
+      - ./elk/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    networks:
+      - kong-net
+      - external
+
+
+  testleo-prometheus-service:
+    image: prom/prometheus:v2.12.0
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - ./prometheus_db:/var/lib/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - kong-net
+      - external
+
+  testleo-grafana-service:
+    image: grafana/grafana:6.3.5
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=pass
+    depends_on:
+      - testleo-prometheus-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana_db:/var/lib/grafana
+      - ./grafana:/etc/grafana
+    networks:
+      - kong-net
+      - external
+
+
+  testleo-kong-migrations:
+    image: kong:latest
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong_db
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: KongPass!
+      KONG_PG_USER: KongUser
+    networks:
+      - kong-net
+    links:
+      - testleo-db-service:db
+    restart: on-failure
+    depends_on:
+      - testleo-db-service
+  testleo-kong-migrations-up:
+    image: kong:latest
+    command: kong migrations up
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong_db
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: KongPass!
+      KONG_PG_USER: KongUser
+    networks:
+      - kong-net
+    links:
+      - testleo-db-service:db
+    restart: on-failure
+    depends_on:
+      - testleo-kong-migrations
+  testleo-kong-service:
+    image: kong:latest
+    environment:
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: '0.0.0.0:8001'
+      KONG_CASSANDRA_CONTACT_POINTS: db
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong_db
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: KongPass!
+      KONG_PG_USER: KongUser
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    networks:
+      - kong-net
+      - external
+    links:
+      - testleo-db-service:db
+    depends_on:
+      - testleo-kong-migrations-up
+    restart: on-failure
+  testleo-kong-setup-service:
+    image: appropriate/curl:latest
+    command: sh /setup-service.sh
+    volumes:
+      - ./kong/setup-service.sh:/setup-service.sh:ro
+    depends_on:
+      - testleo-kong-service
+    networks:
+      - kong-net
+  testleo-db-service:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: kong_db
+      POSTGRES_PASSWORD: KongPass!
+      POSTGRES_USER: KongUser
+    stdin_open: true
+    tty: true
+    networks:
+      - kong-net
+    volumes:
+      - kong-data:/var/lib/postgresql/data
+
+networks:
+  external:
+    internal: false
+  kong-net:
+    internal: true
+volumes:
+  kong-data: {}

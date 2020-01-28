@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testleo-elastic-pod
+  labels:
+    app: testleo
+    type: elastic
+spec:
+  containers:
+    - name: elasticsearch
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
+      ports:
+        - containerPort: 9200
+          hostPort: 9200
+      volumeMounts:
+        - name: elastic-config
+          mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+          readOnly: true
+  volumes:
+    - name: elastic-config
+      hostPath:
+        path: /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/elk/elasticsearch.yml

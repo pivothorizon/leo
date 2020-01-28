@@ -17,7 +17,7 @@ from .enums import GatewayOptions, LoggingOptions, MonitoringOptions, WSGIOption
 from .helper import make_dockerfile, make_docker_compose_file, make_readme_template, make_api_template, \
     make_cli_template, make_test_template, \
     make_config_template, make_prometheus_config_template, make_model_template, make_kong_template, \
-    make_sphinx_index, make_init_template, make_requirements_template, make_kubernetes_kong_template, \
+    make_sphinx_index, make_init_template, make_requirements_template, \
     make_kubernetes_templates, make_metrics_template, make_graphite_templates, make_elk_templates, \
     make_schema_template, make_grafana_templates, make_data_template, make_model_repo_template, \
     make_train_template, make_gitignore_template
@@ -230,7 +230,7 @@ def _generate_project_files(context: CliContext) -> None:
         with open(os.path.join(context.root_dir_name, 'kong', 'setup-service.sh'), 'w') as f:
             make_kong_template(context, f)
         with open(os.path.join(context.root_dir_name, 'kong', 'setup-service-kube.sh'), 'w') as f:
-            make_kubernetes_kong_template(context, f)
+            make_kong_template(context, f)
 
     if context.use_prometheus or context.use_graphite:
         _print_console('Generating Grafana directories and files')
