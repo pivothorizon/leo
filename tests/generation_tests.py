@@ -61,7 +61,7 @@ class GenerationTests(unittest.TestCase):
                 **params
             }
             print(args)
-            old_cwd = os.getcwd()
+            old_cwd = os.path.dirname(__file__)
             new_cwd = os.path.join(old_cwd, 'TestProject', 'tests')
             try:
                 leo.cli.create(args)
@@ -88,9 +88,9 @@ class GenerationTests(unittest.TestCase):
 
             finally:
                 os.chdir(old_cwd)
-                # rmtree('TestProject')
-                # if new_cwd in sys.path:
-                #     sys.path.remove(new_cwd)
+                rmtree('TestProject')
+                if new_cwd in sys.path:
+                    sys.path.remove(new_cwd)
 
 
 if __name__ == '__main__':

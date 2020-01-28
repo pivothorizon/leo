@@ -8,7 +8,7 @@ import shutil
 class HelperTest(unittest.TestCase):
 
     def read_file_content_from_resources(self, filename: str):
-        with open(path.join(os.getcwd(), 'tests', 'resources', filename), 'r') as f:
+        with open(path.join(path.dirname(__file__), 'resources', filename), 'r') as f:
             return f.read()
 
     def assert_file_content(self, template: str, filename: str):
@@ -92,7 +92,7 @@ class HelperTest(unittest.TestCase):
         self.assert_file_content(template, 'requirements.txt')
 
     # =========================== GENERATED FILES TEST ==================================#
-    resources_folder_path = path.join(os.getcwd(), 'tests', 'resources')
+    resources_folder_path = path.join(path.dirname(__file__), 'resources')
     generated_folder_path = path.join(resources_folder_path, 'generated')
 
     def assert_generated_file_content(self, parent_folder: str, folder: str, filename: str, subfolder: str = None):
@@ -138,7 +138,7 @@ class HelperTest(unittest.TestCase):
         self.assert_kubernetes_files('prod', 'main_deployment.yml')
         self.assert_kubernetes_files('prod', 'main_service.yml')
         # Clean up generated files and folders
-        kubernetes_dir = os.path.join(os.getcwd(), 'tests', 'resources', 'generated', 'kubernetes')
+        kubernetes_dir = os.path.join(path.dirname(__file__), 'resources', 'generated', 'kubernetes')
         shutil.rmtree(kubernetes_dir)
         local_dir = os.path.join(kubernetes_dir, 'local')
         prod_dir = os.path.join(kubernetes_dir, 'prod')
@@ -154,8 +154,8 @@ class HelperTest(unittest.TestCase):
         self.assert_grafana_files(folder='provisioning', subfolder='dashboards', filename='prometheus.json')
         self.assert_grafana_files(folder='provisioning', subfolder='dashboards', filename='provisioning.yaml')
         self.assert_grafana_files(folder='provisioning', subfolder='datasources', filename='prometheus.yaml')
-        generated_graphite_dir = path.join(os.getcwd(), 'tests', 'resources', 'generated', 'grafana')
-        graphite_dir = path.join(os.getcwd(), 'tests', 'resources', 'grafana')
+        generated_graphite_dir = path.join(path.dirname(__file__), 'resources', 'generated', 'grafana')
+        graphite_dir = path.join(path.dirname(__file__), 'resources', 'grafana')
 
         self.assert_files(graphite_dir, generated_graphite_dir, 'grafana.ini')
 
