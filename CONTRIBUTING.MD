@@ -25,7 +25,7 @@ git checkout -b 325-add-japanese-translations
 
 Make sure you're using a recent python version, leo is developed using 3.7
 
-Now run the tests:
+Now run the tests in the root directory:
 
 ```sh
 pytest 

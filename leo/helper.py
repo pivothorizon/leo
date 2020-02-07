@@ -14,8 +14,8 @@ _template_folder = 'template'
 
 
 def make_model_template(
-    context: CliContext,
-    target: Optional[TextIO] = None) -> Optional[str]:
+        context: CliContext,
+        target: Optional[TextIO] = None) -> Optional[str]:
     """
     Writes a template for implementations of the LeoModel ABC.
 
@@ -26,6 +26,7 @@ def make_model_template(
 
     """
     return _make_template('model_template.jinja2', context, target)
+
 
 def make_schema_template(context: CliContext, target: Optional[TextIO] = None) -> Optional[str]:
     """
@@ -64,6 +65,15 @@ def make_readme_template(context: CliContext, target: Optional[TextIO] = None) -
     """
     return _make_template('readme.jinja2', context, target)
 
+
+def make_gitignore_template(context: CliContext, target: Optional[TextIO] = None) -> Optional[str]:
+    """
+    Generates .gitignore file for the project with some default folders and files included
+    :param context: Cli context which captures command line arguments and provides utility methods
+    :param target: A stream to write the output to. If None, the output is returned.
+    :return: The .gitignore file content as a string if target is None, otherwise nothing.
+    """
+    return _make_template('gitignore.jinja2', context, target)
 
 def make_cli_template(context: CliContext, target: Optional[TextIO] = None) -> Optional[str]:
     """
@@ -116,11 +126,10 @@ def make_train_template(context: CliContext, target: Optional[TextIO] = None) ->
 
 
 def _make_template(template_name: str, context: CliContext, target: Optional[TextIO] = None, **template_args) -> \
-Optional[str]:
+        Optional[str]:
     template = _loader.load(_jinja_env, f'{_template_folder}/{template_name}')
     all_args = context.get_cli_dict().copy()
     all_args.update(**template_args)
-    all_args.update(_all_options_=all_args.items())
     result = template.render(**all_args)
     return _write(result, target)
 
@@ -259,20 +268,6 @@ def make_requirements_template(context: CliContext, target: Optional[TextIO] = N
     return _make_template('requirements.txt.jinja2', context, target)
 
 
-def make_kubernetes_kong_template(context: CliContext, target: Optional[TextIO] = None) -> Optional[str]:
-    """
-    Generate a script to initialize Kong for the new project.
-    This version of the script can be used by Kubernetes.
-
-    :param context: Cli context which captures command line arguments and provides utility methods
-    :param target: A stream to write the file to. If None, the file will be returned as a string.
-
-    :return: The script contents, except if the target parameter is given.
-
-    """
-    return _make_template('kong_setup_service.sh.jinja2', context, target)
-
-
 def make_kubernetes_templates(context: CliContext, target_directory: str) -> None:
     """
     Generate Kubernetes Pod templates and Services for the new project.
@@ -282,25 +277,33 @@ def make_kubernetes_templates(context: CliContext, target_directory: str) -> Non
 
     """
 
-    def _make(name: str):
-        with open(os.path.join(target_directory, f'{name}_pod_template.yml'), 'w') as f:
-            _make_template(f'kubernetes/{name}_pod_template.yml.jinja2', context, f)
-        with open(os.path.join(target_directory, f'{name}_service.yml'), 'w') as f:
-            _make_template(f'kubernetes/{name}_service.yml.jinja2', context, f)
+    def _make(name: str, sub_dir: str):
+        with open(os.path.join(target_directory, sub_dir, f'{name}_pod_template.yml'), 'w') as f:
+            _make_template(f'kubernetes/{sub_dir}/{name}_pod_template.yml.jinja2', context, f)
+        with open(os.path.join(target_directory, sub_dir, f'{name}_service.yml'), 'w') as f:
+            _make_template(f'kubernetes/{sub_dir}/{name}_service.yml.jinja2', context, f)
 
-    _make('main')
+    def _make_main(sub_dir: str):
+        with open(os.path.join(target_directory, sub_dir, f'main_deployment.yml'), 'w') as f:
+            _make_template(f'kubernetes/{sub_dir}/main_deployment_template.yml.jinja2', context, f)
+        with open(os.path.join(target_directory, sub_dir, f'main_service.yml'), 'w') as f:
+            _make_template(f'kubernetes/{sub_dir}/main_service.yml.jinja2', context, f)
+
+    _make_main('local')
+    _make_main('prod')
+
     if context.use_elk:
-        _make('elastic')
-        _make('kibana')
-        _make('logstash')
+        _make('elastic', 'local')
+        _make('kibana', 'local')
+        _make('logstash', 'local')
     if context.use_prometheus:
-        _make('prometheus')
-        _make('grafana')
+        _make('prometheus', 'local')
+        _make('grafana', 'local')
     if context.use_graphite:
-        _make('graphite')
+        _make('graphite', 'local')
     if context.use_kong:
-        _make('kong')
-        _make('db')
+        _make('kong', 'local')
+        _make('kong_db', 'local')
 
 
 def make_graphite_templates(context: CliContext, target_directory: str) -> None:

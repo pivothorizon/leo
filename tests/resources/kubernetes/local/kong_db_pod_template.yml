@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testleo-db-pod
+  labels:
+    app: testleo
+    type: db
+spec:
+  containers:
+    - name: db
+      image: postgres:latest
+      env:
+        - name: POSTGRES_DB
+          value: kong_db
+        - name: POSTGRES_PASSWORD
+          value: KongPass!
+        - name: POSTGRES_USER
+          value: KongUser
+      ports:
+        - containerPort: 5432
+          hostPort: 5432
+      volumeMounts:
+        - name: db-dir
+          mountPath: /var/lib/postgresql/data
+  volumes:
+    - name: db-dir

@@ -14,9 +14,7 @@ class CliContext(object):
                                         'web_framework': (WebFrameworkOptions, WebFrameworkOptions.FALCON.value),
                                         'environment_type': (EnvironmentOptions, None),
                                         'monitor': (MonitoringOptions, None)}.items():
-            choice = args[option]
-            if choice is None:
-                choice = default
+            choice = args[option] if args[option] is not None else default
             self._cli_context_dict.update(**{f'use_{name.lower()}': choice == val.value
                                              for name, val in enum.__members__.items()})
             self._cli_context_dict.update(**{option: choice})

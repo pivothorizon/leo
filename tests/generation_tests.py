@@ -1,14 +1,14 @@
 import os
 import unittest
 import itertools
-import sys
 from typing import Tuple
 from shutil import rmtree
 import inspect
+import importlib
+import sys
 
 import leo.cli
 from leo.enums import *
-
 
 _do_docker_tests = False  # This will take about 35-45 seconds per configuration on my machine if set to True
 leo.cli.download_dependencies = False
@@ -61,13 +61,13 @@ class GenerationTests(unittest.TestCase):
                 **params
             }
             print(args)
-            old_cwd = os.getcwd()
-            new_cwd = os.path.join(old_cwd, 'TestProject')
+            old_cwd = os.path.dirname(__file__)
+            new_cwd = os.path.join(old_cwd, 'TestProject', 'tests')
             try:
                 leo.cli.create(args)
                 os.chdir(new_cwd)
                 sys.path.append(new_cwd)
-                test_module = __import__('TestProject.tests.testproject_tests', fromlist=['*'])
+                test_module = importlib.import_module(name='testproject_tests')
                 self.assertIsNotNone(test_module)
                 self.assertTrue(hasattr(test_module, 'TestProjectTester'))
                 test_cls = getattr(test_module, 'TestProjectTester')
@@ -76,7 +76,7 @@ class GenerationTests(unittest.TestCase):
 
                 setattr(test_module, '_do_docker_tests', _do_docker_tests)
 
-                sys.modules['TestProject'].__file__ = os.path.abspath(new_cwd)
+                sys.modules['tests'].__file__ = os.path.abspath(new_cwd)
 
                 for test_fn in [fn for name, fn
                                 in inspect.getmembers(test_obj, inspect.ismethod)
@@ -91,3 +91,7 @@ class GenerationTests(unittest.TestCase):
                 rmtree('TestProject')
                 if new_cwd in sys.path:
                     sys.path.remove(new_cwd)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testleo-kibana-pod
+  labels:
+    app: testleo
+    type: kibana
+spec:
+  containers:
+    - name: kibana
+      image: docker.elastic.co/kibana/kibana:7.3.0
+      ports:
+        - containerPort: 5601
+          hostPort: 5601
+      volumeMounts:
+        - name: kibana-config
+          mountPath: /usr/share/kibana/config/kibana.yml
+          readOnly: true
+  volumes:
+    - name: kibana-config
+      hostPath:
+        path:  {{ROOT}}/testleo/elk/kibana.yml

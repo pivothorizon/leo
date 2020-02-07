@@ -10,7 +10,6 @@ from typing import Callable, Optional, List, Mapping, Type, Union
 from getpass import getuser
 import socket
 
-
 from .clicontext import CliContext
 from .enums import GatewayOptions, LoggingOptions, MonitoringOptions, WSGIOptions, WebFrameworkOptions, \
     EnvironmentOptions, OSType, LibrarySupport
@@ -18,10 +17,10 @@ from .enums import GatewayOptions, LoggingOptions, MonitoringOptions, WSGIOption
 from .helper import make_dockerfile, make_docker_compose_file, make_readme_template, make_api_template, \
     make_cli_template, make_test_template, \
     make_config_template, make_prometheus_config_template, make_model_template, make_kong_template, \
-    make_sphinx_index, make_init_template, make_requirements_template, make_kubernetes_kong_template, \
+    make_sphinx_index, make_init_template, make_requirements_template, \
     make_kubernetes_templates, make_metrics_template, make_graphite_templates, make_elk_templates, \
     make_schema_template, make_grafana_templates, make_data_template, make_model_repo_template, \
-    make_train_template
+    make_train_template, make_gitignore_template
 
 
 def _copy_files(source: str, destination: str, suffix: Optional[str] = '',
@@ -156,13 +155,19 @@ _create_questions = [
 
 def create(args):
     context = CliContext(args)
-    _validate_library_choices(args['libraries'])  # PyInquirer does not (yet?) support validation on checkboxes, so we have to do it manually.
+    _validate_library_choices(
+        args['libraries'])  # PyInquirer does not (yet?) support validation on checkboxes, so we have to do it manually.
     _print_console(f'Starting project generation for {context.root_dir_name}', True)
     _generate_project_files(context)
     _generate_package_files(context)
     _create_virtual_environment(context)
     _generate_documentation(context)
     _print_console(f'Created project {context.root_dir_name}', True)
+
+
+def _add_git_keep_file(file_path):
+    with open(os.path.join(file_path, '.gitkeep'), 'a'):
+        _print_console(f'Created .gitkeep file in {file_path} folder.')
 
 
 def _generate_project_files(context: CliContext) -> None:
@@ -185,7 +190,17 @@ def _generate_project_files(context: CliContext) -> None:
     # Create root directory for the new project
     os.mkdir(context.root_dir_name)
     os.mkdir(os.path.join(context.root_dir_name, 'tests'))
-    os.mkdir(os.path.join(context.root_dir_name, 'models'))
+    models_path = os.path.join(context.root_dir_name, 'models')
+    os.mkdir(models_path)
+    notebooks_path = os.path.join(context.root_dir_name, 'notebooks')
+    os.mkdir(notebooks_path)
+
+    _add_git_keep_file(models_path)
+    _add_git_keep_file(notebooks_path)
+
+    with open(os.path.join(models_path, '.gitkeep'), 'a'):
+        _print_console('Created .gitkeep file in notebooks folder.')
+
     if context.kubernetes:
         _generate_kubernetes_files(context)
 
@@ -194,6 +209,8 @@ def _generate_project_files(context: CliContext) -> None:
 
     with open(os.path.join(context.root_dir_name, f'README.md'), 'w') as f:
         make_readme_template(context, f)
+    with open(os.path.join(context.root_dir_name, f'.gitignore'), 'w') as f:
+        make_gitignore_template(context, f)
     with open(os.path.join(context.root_dir_name, f'{context.module_name}cli.py'), 'w') as f:
         make_cli_template(context, f)
     with open(os.path.join(context.root_dir_name, 'tests', f'{context.module_name}_tests.py'), 'w') as f:
@@ -213,7 +230,7 @@ def _generate_project_files(context: CliContext) -> None:
         with open(os.path.join(context.root_dir_name, 'kong', 'setup-service.sh'), 'w') as f:
             make_kong_template(context, f)
         with open(os.path.join(context.root_dir_name, 'kong', 'setup-service-kube.sh'), 'w') as f:
-            make_kubernetes_kong_template(context, f)
+            make_kong_template(context, f)
 
     if context.use_prometheus or context.use_graphite:
         _print_console('Generating Grafana directories and files')
@@ -233,6 +250,8 @@ def _generate_docker_files(context):
 
 def _generate_kubernetes_files(context):
     os.mkdir(os.path.join(context.root_dir_name, 'kubernetes'))
+    os.mkdir(os.path.join(context.root_dir_name, 'kubernetes', 'local'))
+    os.mkdir(os.path.join(context.root_dir_name, 'kubernetes', 'prod'))
     make_kubernetes_templates(context, os.path.join(context.root_dir_name, 'kubernetes'))
 
 
@@ -247,7 +266,7 @@ def _generate_package_files(context: CliContext) -> None:
 
     if context.use_pyspark:
         shutil.copyfile(os.path.join(context.package_files_path, 'spark_util.py.dist'),
-                    os.path.join(context.package_path, 'spark_util.py'))
+                        os.path.join(context.package_path, 'spark_util.py'))
 
     if context.use_mleap:
         shutil.copyfile(os.path.join(context.package_files_path, 'mleapsparkmodel.py.dist'),
@@ -312,27 +331,24 @@ def _create_virtual_environment(context):
 
 
 def _create_virtualenv_environment(context):
-    working_directory = os.path.join(os.getcwd(), context.root_dir_name)
+    working_dir = os.path.join(os.getcwd(), context.root_dir_name)
     _print_console(
-        f'Creating {EnvironmentOptions.VIRTUALENV.value} environment named venv on path: {working_directory}')
-    if download_dependencies:
-        subprocess.call(['python3','-m', 'venv', '--copies','--clear', 'venv'], cwd=working_directory)
-    else:
-        subprocess.call(['python3','-m', 'venv', '--copies','--clear', '--without-pip', 'venv'], cwd=working_directory)
+        f'Creating {EnvironmentOptions.VIRTUALENV.value} environment named venv on path: {working_dir}')
+    subprocess.call(['python3', '-m', 'venv', '--copies', '--clear', 'venv'], cwd=working_dir)
     _print_console(f'{EnvironmentOptions.VIRTUALENV.value} environment venv created successfully')
-    _print_console('Installing dependencies in virtual environment venv')
-    if _get_os() == OSType.POSIX:
-        binary_directory_name = 'bin'
-    else:  # Assuming Windows
-        binary_directory_name = 'Scripts'
-    subprocess.call(
-        [os.path.join('venv', binary_directory_name, 'python'), '-m', 'pip', 'install', '-r', 'requirements.txt',
-         '--no-warn-script-location'], cwd=working_directory)
-    _print_console('Dependencies has been installed successfully')
+    if download_dependencies:
+        _print_console('Installing dependencies in virtual environment venv')
+        if _get_os() == OSType.POSIX:
+            binary_directory_name = 'bin'
+        else:  # Assuming Windows
+            binary_directory_name = 'Scripts'
+        subprocess.call(
+            [os.path.join('venv', binary_directory_name, 'python'), '-m', 'pip', 'install', '-r', 'requirements.txt',
+             '--no-warn-script-location'], cwd=working_dir)
+        _print_console('Dependencies has been installed successfully')
 
 
 def _create_conda_environment(context) -> None:
-    working_directory = os.path.join(os.getcwd(), context.root_dir_name)
     _print_console(f'Creating {EnvironmentOptions.CONDA.value} environment on named {context.module_name}_env')
     _print_console(f'Checking {EnvironmentOptions.CONDA.value} version')
     subprocess.call(['conda', '--version'])
