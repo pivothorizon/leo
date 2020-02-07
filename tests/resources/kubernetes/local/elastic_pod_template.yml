@@ -19,4 +19,4 @@ spec:
   volumes:
     - name: elastic-config
       hostPath:
-        path: /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/elk/elasticsearch.yml
+        path: {{ROOT}}/testleo/elk/elasticsearch.yml

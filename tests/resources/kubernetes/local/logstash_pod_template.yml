@@ -22,7 +22,7 @@ spec:
   volumes:
     - name: logstash-config-yml
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/elk/logstash.yml
+        path:  {{ROOT}}/testleo/elk/logstash.yml
     - name: logstash-config-conf
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/elk/logstash.conf
+        path:  {{ROOT}}/testleo/elk/logstash.conf

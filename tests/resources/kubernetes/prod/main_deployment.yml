@@ -42,4 +42,4 @@ spec:
   volumes:
     - name: kong-service-script
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/kong/setup-service-kube.sh
+        path:  {{ROOT}}/testleo/kong/setup-service-kube.sh

@@ -1,4 +1,6 @@
 import unittest
+from typing import Mapping
+
 from leo.helper import *
 from .shared import *
 from os import path
@@ -102,11 +104,20 @@ class HelperTest(unittest.TestCase):
 
         self.assert_files(expected_file_path, generated_file_path, filename)
 
-    def assert_files(self, expected_file_path: str, generated_file_path: str, filename: str):
+    def assert_files(self, expected_file_path: str, generated_file_path: str, filename: str,
+                     substitutions: Mapping[str, str] = None):
+        if not substitutions:
+            substitutions = {
+                '{{ROOT}}': os.path.dirname(os.path.dirname(__file__))
+            }
         with open(path.join(expected_file_path, filename), 'r') as f:
             expected_content = f.read()
+            for old, new in substitutions.items():
+                expected_content = expected_content.replace(old, new)
         with open(path.join(generated_file_path, filename), 'r') as f:
             generated_content = f.read()
+            for old, new in substitutions.items():
+                generated_content = generated_content.replace(old, new)
         assert expected_content == generated_content
 
     def assert_kubernetes_files(self, folder: str, filename: str):

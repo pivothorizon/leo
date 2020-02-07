@@ -21,4 +21,4 @@ spec:
   volumes:
     - name: grafana-dir
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/grafana_db
+        path:  {{ROOT}}/testleo/grafana_db

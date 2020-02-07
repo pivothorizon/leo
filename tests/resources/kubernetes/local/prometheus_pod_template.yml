@@ -24,7 +24,7 @@ spec:
   volumes:
     - name: prometheus-dir
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/prometheus
+        path:  {{ROOT}}/testleo/prometheus
     - name: prometheus-db
       hostPath:
-        path:  /Users/vdogan/PivotHorizonWorkspace/OpenSource/leo/testleo/prometheus_db
+        path:  {{ROOT}}/testleo/prometheus_db
